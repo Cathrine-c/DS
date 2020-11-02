@@ -1,41 +1,66 @@
+package java_1101.java;
 
 
 class Node{
-    public Node next;
-    public int data;
+    int data;
+    Node next;
 
     public Node(int data) {
         this.data = data;
-        this.next=null;
+        this.next = next;
     }
 }
 public class MyLinkedList {
     public Node head;
-
+//头插
     public void addFirst(int data){
-        Node node=new Node(data);
+        Node node= new Node(data);
         if (this.head == null) {
             this.head=node;
             return;
         }
-        node.next=head;
-        head=node;
+        node.next=this.head;
+        this.head=node;
     }
-
+//尾插
     public void addLast(int data){
-        Node node=new Node(data);
+        Node node = new Node(data);
         Node cur=this.head;
-        if(this.head==null){
+        if (this.head == null) {
             this.head=node;
+            return;
         }
         while (cur.next!=null){
             cur=cur.next;
+            cur.next=node;
         }
-        cur.next=node;
+    }
+//判断链表是否包含某个值
+    public boolean contains(int key){
+        Node cur=this.head;
+        while (cur!=null){
+            if (cur.data==key){
+                return true;
+            }
+            cur=cur.next;
+        }
+        return false;
     }
 
-    public void insertIndex(int index,int data){
-        Node node=new Node(data);
+//计算链表长度
+    public int size(){
+        Node cur=this.head;
+        int count = 0;
+        while (cur!=null){
+            count++;
+            cur = cur.next;
+        }
+        return count;
+    }
+
+//在index位置插入一个新节点
+    public void addIndex(int index,int data){
+        Node node = new Node(data);
         if (index == 0) {
             addFirst(data);
             return;
@@ -44,146 +69,81 @@ public class MyLinkedList {
             addLast(data);
             return;
         }
-        Node cur=findIndex(index);
-        //Node del=cur.next;
-       // cur.next=node;
-       // node.next=del;
 
-        node.next=cur.next;
-        cur.next=node;
+        Node cur=findIndex(index);
+        node.next = cur.next;
+        cur.next = node;
     }
 
-    private Node findIndex(int index) {
-        if(index<0||index>size()){
-            System.out.println("插入位置不合理");
-        }
+
+    private Node findIndex(int index){
         Node cur=this.head;
-        while (index-1!=0){
-            cur=cur.next;
+        if (index < 0 || index > size()) {
+            System.out.println("插入位置不合理！");
+            return null;
+        }
+        while (index-1>0){
+            cur= cur.next;
             index--;
         }
         return cur;
     }
 
-    public boolean contains(int key){
-        Node cur=this.head;
-        while (cur!=null){
-            if (cur.data == key) {
-                return true;
-            }
-           cur=cur.next;
-        }
-        return false;
-    }
-
+    //删除值为key的节点
     public void removeKey(int key){
-        Node cur=this.head;
-        if(this.head==null){
+        if (this.head==null){
             return;
         }
-        if(this.head.data==key){
-            this.head=this.head.next.next;
+        if (this.head.data == key) {
+            this.head = this.head.next;
             return;
         }
-        Node prev=findKey(key);
-        if(prev==null){
-            System.out.println("没有此节点");
+        Node prev= findPrev(key);
+        if (prev == null) {
+            System.out.println("没有这个节点！");
             return;
         }
-        Node del=prev.next;
-        prev.next=del.next;
+        Node del= prev.next;
+        prev.next = del.next;
     }
 
-    private Node findKey(int key){
-        Node prev=this.head;
+
+    private Node findPrev(int key){
+        Node prev = this.head;
         while (prev.next!=null){
-            if(prev.next.data==key){
+            if (prev.next.data==key){
                 return prev;
+            }else{
+                prev = prev.next;
             }
-            prev=prev.next;
         }
         return null;
     }
 
+    //删除所有值为key的节点
     public void removeAllKey(int key){
-        Node prev=this.head;
-        Node cur=prev.next;
+        Node cur=this.head.next;
+        Node prev = this.head;
         while (cur!=null){
-            if (prev.data == key) {
+            if (cur.data==key){
                 prev.next=cur.next;
-                cur=cur.next;
-            }else {
-                prev=cur;
-                cur=cur.next;
+                cur = cur.next;
+            }else{
+                prev = cur;
+                cur = cur.next;
             }
-        }
-        if (this.head.data == key) {
-            this.head=this.head.next;
-            return;
+            if (this.head.data == key) {
+                this.head = this.head.next;
+            }
         }
     }
 
+//打印链表
     public void display(){
         Node cur=this.head;
         while (cur!=null){
             System.out.println(cur.data+" ");
-            cur=cur.next;
+            cur= cur.next;
         }
-        System.out.println();
     }
-
-    public int size(){
-        Node cur=this.head;
-        int count=0;
-        while (cur!=null){
-            count++;
-            cur=cur.next;
-        }
-        return count;
-    }
-
-    public void clear(){
-        this.head=null;
-    }
-
-    //反转单链表
-    public Node reverseList(Node head){
-        Node cur=this.head;
-        Node prev=null;
-        Node newhead=null;
-
-        while (cur!=null){
-             Node curNext=cur.next;
-            if (curNext == null) {
-                newhead=cur;
-            }
-            cur.next=prev;
-            prev=cur;
-            cur=cur.next;
-        }
-        return newhead;
-    }
-
-    public Node reversePrint() {
-        Node newhead=null;
-        Node cur=this.head;
-        Node prev=null;
-        if(this.head==null){
-            newhead=cur;
-        }
-        while (cur!=null) {
-            Node curNext = cur.next;
-            if (cur.next == null) {
-                newhead = cur;
-                int[] array={cur.data};
-            }
-            cur.next = prev;
-            prev = cur;
-            cur = curNext;
-            int[] array={cur.data};
-        }
-        return cur;
-
-    }
-
 }
