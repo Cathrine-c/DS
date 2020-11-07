@@ -1,10 +1,6 @@
 package java1103_Thread.java;
 
-import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
-
-import java.awt.image.renderable.RenderableImageProducer;
 import java.util.concurrent.PriorityBlockingQueue;
-
 
 /**
  * 定时器的实现：
@@ -15,11 +11,14 @@ import java.util.concurrent.PriorityBlockingQueue;
  *
  */
 public class ThreadDemo11 {
+
 //优先队列中的元素必须可以比较，让Task实现Comparable接口
     static class Task implements Comparable<Task> {
         //Runnable中有一个run方法来描述执行的具体的任务
         private long time;
         private Runnable command;
+
+
          //构造方法的参数表示：多少ms之后开始执行(相对时间)
         public Task(long after, Runnable command) {
             this.time = time;
@@ -36,11 +35,13 @@ public class ThreadDemo11 {
         }
     }
 
+
     static class Worker extends Thread{
         private PriorityBlockingQueue<Task> queue = null;
-
-        public Worker(PriorityBlockingQueue<Task> queue) {
+        private Object mailBox=null;
+        public Worker(PriorityBlockingQueue<Task> queue,Object mailBox) {
             this.queue = queue;
+            this.mailBox=mailBox;
         }
 
         @Override
@@ -55,6 +56,9 @@ public class ThreadDemo11 {
                     if (task.time > currentTime) {
                         //时间还没到，就把任务塞回队列中
                         queue.put(task);
+                        synchronized (mailBox){
+                            mailBox.wait(task.time-currentTime);
+                        }
                     }else{
                         task.run();
                     }
@@ -68,7 +72,8 @@ public class ThreadDemo11 {
     }
 
     static class Timer{
-//定时器的基本构成有三个部分：
+        private Object mailBox=null;
+        //定时器的基本构成有三个部分：
         //1.用一个类来描述“任务”
         //2.用一个阻塞队列来组织若干个任务，让队首元素就是时间最早的任务
         //如果队首时间未到，那么其它元素肯定不能执行
@@ -77,13 +82,16 @@ public class ThreadDemo11 {
 
         public Timer() {
             //创建线程
-            Worker worker = new Worker(queue);
+            Worker worker = new Worker(queue, mailBox);
             worker.start();
         }
         //让调用者把任务安排进来
         public void schedule(Runnable command,long after){
             Task task = new Task(after, command);
             queue.put(task);
+            synchronized (mailBox){
+                mailBox.notify();
+            }
         }
     }
 
